@@ -112,7 +112,7 @@ def verification_node(state: GraphState, client: openai.OpenAI) -> GraphState:
 
 
 def route_after_verification(state: GraphState) -> str:
-    if state.get("verification_verdict") == "SUPPORTED":
+    if state.get("verification_verdict") in ("SUPPORTED", "PARTIALLY_SUPPORTED"):
         return "finalize_node"
     attempts = state.get("regeneration_attempts", 0)
     if attempts < MAX_REGENERATION_ATTEMPTS:

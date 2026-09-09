@@ -17,16 +17,23 @@ from generation import _format_context
 
 log = get_logger("verification")
 
-VERIFICATION_SYSTEM_PROMPT = """You are a strict fact-checker for a government information assistant.
-You will be given a citizen's question, the retrieved official context, and a
-draft answer. Decide if the draft answer is fully supported by the context.
+VERIFICATION_SYSTEM_PROMPT = """You are a strict fact-checker for a government information assistant. You will be given a citizen's question, the retrieved official context, and a draft answer. Decide how well the draft answer is supported by the context.
 
 Respond with ONLY a JSON object, no other text:
-{"verdict": "SUPPORTED" | "CONTRADICTION" | "UNSUPPORTED", "explanation": "<one short sentence in Arabic>"}
+{"verdict": "SUPPORTED" | "PARTIALLY_SUPPORTED" | "CONTRADICTION" | "UNSUPPORTED", "explanation": "<one short sentence in Arabic>"}
 
+VERDICT DEFINITIONS:
 - SUPPORTED: every claim in the answer is backed by the context.
+- PARTIALLY_SUPPORTED: some claims are backed by the context, but the answer also includes at least one claim the context does not cover.
 - CONTRADICTION: the answer states something that conflicts with the context.
-- UNSUPPORTED: the answer makes a claim the context simply doesn't cover."""
+- UNSUPPORTED: the answer's claims are not covered by the context at all.
+
+EXAMPLE:
+Question: إزاي أطلع بطاقة رقم قومي لأول مرة؟
+Context: [law_143_1994_7] مادة 48: يجب على كل مواطن بلغ من العمر ست عشرة سنة أن يتقدم بطلب للحصول على بطاقة تحقيق الشخصية خلال ستة أشهر من بلوغ هذا السن.
+Draft Answer: تقدر تطلع البطاقة من عمر 16 سنة، والرسوم 50 جنيه.
+Output: {"verdict": "PARTIALLY_SUPPORTED", "explanation": "السن مذكور في السياق لكن الرسوم غير مذكورة."}
+"""
 
 
 @dataclass
