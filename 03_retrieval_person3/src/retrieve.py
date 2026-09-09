@@ -30,7 +30,7 @@ def _get_hybrid_search() -> HybridSearch:
 
 def retrieve(
     query: str,
-    top_k: int = 5,
+    top_k: int = 2,
     department: Optional[str] = None,
 ) -> List[RetrievedChunk]:
     hybrid = _get_hybrid_search()
