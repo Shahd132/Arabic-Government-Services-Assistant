@@ -41,7 +41,7 @@ MAX_REGENERATION_ATTEMPTS = 1
 class GraphState(TypedDict, total=False):
     user_input: str
     document_path: Optional[str]
-    conversation_history: List[Tuple[str, str]]   # changed to tuples
+    conversation_history: List[Tuple[str, str]]
     ocr_text: Optional[str]
     query_for_pipeline: str
     department: Optional[str]
@@ -53,6 +53,7 @@ class GraphState(TypedDict, total=False):
     verification_explanation: Optional[str]
     regeneration_attempts: int
     final_answer: str
+    is_verified: bool   # ✅ ADDED – so UI can show "مدعوم" / "غير مدعوم"
 
 
 # ---------- Nodes ----------
@@ -78,7 +79,6 @@ def rewrite_query_node(state: GraphState, client: openai.OpenAI) -> GraphState:
     if state.get("ocr_text"):
         base_query = f"{state['user_input']}\n\nOCR Text:\n{state['ocr_text']}"
 
-    # history is now List[Tuple[str, str]]
     history = state.get("conversation_history", [])
     rewritten = rewrite_query(client, base_query, history)
     return {"query_for_pipeline": rewritten}
@@ -108,7 +108,15 @@ def generation_node(state: GraphState, client: openai.OpenAI) -> GraphState:
 def verification_node(state: GraphState, client: openai.OpenAI) -> GraphState:
     result = verify_answer(client, state["query_for_pipeline"], state["retrieved_chunks"], state["draft_answer"])
     log.info("Verification: %s (%s)", result.verdict, result.explanation)
-    return {"verification_verdict": result.verdict, "verification_explanation": result.explanation}
+    
+    # ✅ Store the verification result and the boolean flag
+    is_verified = result.is_supported  # True for SUPPORTED or PARTIALLY_SUPPORTED
+    
+    return {
+        "verification_verdict": result.verdict,
+        "verification_explanation": result.explanation,
+        "is_verified": is_verified,
+    }
 
 
 def route_after_verification(state: GraphState) -> str:
@@ -127,10 +135,14 @@ def regenerate_node(state: GraphState) -> GraphState:
 def finalize_node(state: GraphState) -> GraphState:
     verdict = state.get("verification_verdict")
     answer = state["draft_answer"]
-    if verdict != "SUPPORTED":
-        caveat = f"\n\n⚠️ ملاحظة: لم يتم التحقق الكامل من هذه الإجابة ({state.get('verification_explanation', '')}). يُنصح بمراجعة الجهة الرسمية."
+    
+    # ✅ Add a disclaimer only if the answer is NOT supported
+    if verdict not in ("SUPPORTED", "PARTIALLY_SUPPORTED"):
+        caveat = f"\n\n ملاحظة: لم يتم التحقق الكامل من هذه الإجابة ({state.get('verification_explanation', '')}). يُنصح بمراجعة الجهة الرسمية."
         answer += caveat
+    
     return {"final_answer": answer}
+    # Note: is_verified is already set in the state via verification_node
 
 
 # ---------- Build Graph ----------
@@ -210,26 +222,3 @@ def run(
 
 def reset_conversation(session_id: str = "default") -> None:
     memory.clear(session_id)
-
-
-    # ---------- Demo ----------
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-    load_dotenv(_ROOT_DIR / ".env")
-
-    session_id = "demo-session"
-
-    q1 = "إيه الأوراق المطلوبة لاستخراج بطاقة الرقم القومي لأول مرة؟"
-    print(f"\nQuestion 1: {q1}\n")
-    result1 = run(q1, session_id=session_id)
-    print("Department:", result1.get("department"))
-    print("\n--- ANSWER 1 ---\n")
-    print(result1.get("final_answer"))
-
-    q2 = "طب لو ضاعت البطاقة؟"
-    print(f"\n\nQuestion 2 (follow-up): {q2}\n")
-    result2 = run(q2, session_id=session_id)
-    print("Rewritten query:", result2.get("query_for_pipeline"))
-    print("Department:", result2.get("department"))
-    print("\n--- ANSWER 2 ---\n")
-    print(result2.get("final_answer"))
