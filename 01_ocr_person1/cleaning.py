@@ -1,66 +1,86 @@
 """
 cleaning.py
-Cleans up raw text coming out of OCR (or even digital extraction --
-digital PDFs can also have weird spacing/symbols).
+Cleans up raw text from OCR or digital extraction.
 
-Usage:
-    from cleaning import clean_text
-    clean = clean_text(raw_text)
+FIX for Problem #1:
+- Previously `normalize_arabic` changed أ إ آ → ا and ى → ي,
+  which broke retrieval ("أحمد" stored as "احمد" and not matching).
+- Now we distinguish between:
+  * `for_search=True` → aggressive normalization (unify alef/ya forms)
+  * `for_search=False` (default) → keep original letters, only remove diacritics
 """
 
 import re
 
 
 def remove_unnecessary_symbols(text: str) -> str:
-    """Strips characters that aren't real content: control chars, weird bullets, etc."""
-    text = re.sub(r"[^\S\n]+", " ", text)  # collapse repeated spaces/tabs (keep newlines)
-    text = re.sub(r"[\u200b\u200c\u200e\u200f\ufeff]", "", text)  # invisible/formatting chars
+    """Strips invisible/formatting characters and collapses spaces."""
+    text = re.sub(r"[^\S\n]+", " ", text)
+    text = re.sub(r"[\u200b\u200c\u200e\u200f\ufeff]", "", text)
     return text
 
 
 def normalize_spaces(text: str) -> str:
-    """Collapses multiple blank lines and trims each line."""
+    """Collapses blank lines and trims each line."""
     lines = [line.strip() for line in text.split("\n")]
-    lines = [line for line in lines if line]  # drop empty lines
+    lines = [line for line in lines if line]
     return "\n".join(lines)
 
 
-def normalize_arabic(text: str) -> str:
-    """
-    Basic Arabic normalization:
-    - unify different forms of alef (أ إ آ) -> ا
-    - unify ة -> ه is a common choice, but risky for meaning; we do NOT do that here
-    - remove diacritics (tashkeel)
-    - unify ى -> ي
-    """
-    # Remove Arabic diacritics (tashkeel)
-    arabic_diacritics = re.compile(r"[\u0617-\u061A\u064B-\u0652]")
-    text = arabic_diacritics.sub("", text)
+def remove_diacritics(text: str) -> str:
+    """Removes Arabic tashkeel (fatha, damma, kasra, etc.)."""
+    return re.sub(r"[\u0617-\u061A\u064B-\u0652]", "", text)
 
-    # Unify alef forms
-    text = re.sub(r"[إأآا]", "ا", text)
 
-    # Unify ya forms
+def normalize_arabic_for_search(text: str) -> str:
+    """
+    Aggressive normalization ONLY for search/retrieval queries.
+    Unifies:
+      - Alef: أ إ آ ٱ → ا
+      - Yeh: ى → ي
+      - Teh Marbuta: ة → ه
+    """
+    text = re.sub(r"[إأآٱ]", "ا", text)
     text = re.sub(r"ى", "ي", text)
-
+    text = re.sub(r"ة", "ه", text)
     return text
 
 
-def clean_text(raw_text: str, arabic: bool = True) -> str:
+def normalize_arabic_for_display(text: str) -> str:
     """
-    Full cleaning pipeline. Set arabic=False if you're processing
-    non-Arabic text and want to skip Arabic-specific normalization.
+    Light normalization for display and storage.
+    Only removes diacritics; keeps original letter forms.
+    """
+    return remove_diacritics(text)
+
+
+def clean_text(raw_text: str, arabic: bool = True, for_search: bool = False) -> str:
+    """
+    Full cleaning pipeline.
+
+    Args:
+        raw_text: text to clean.
+        arabic: apply Arabic-specific handling.
+        for_search: if True → aggressive normalization (for queries).
+                    if False (default) → keep original letters (for storage).
+
+    Returns:
+        Cleaned text.
     """
     text = remove_unnecessary_symbols(raw_text)
     text = normalize_spaces(text)
+
     if arabic:
-        text = normalize_arabic(text)
+        if for_search:
+            text = normalize_arabic_for_search(text)
+        else:
+            text = normalize_arabic_for_display(text)
+
     return text
 
 
 if __name__ == "__main__":
     sample = "   إيصال   سداد   رسوم  \n\n مصلحة الأحوال المدنية  \u200b "
-    print("BEFORE:")
-    print(repr(sample))
-    print("\nAFTER:")
-    print(repr(clean_text(sample)))
+    print("BEFORE: ", repr(sample))
+    print("DISPLAY:", repr(clean_text(sample, for_search=False)))
+    print("SEARCH: ", repr(clean_text(sample, for_search=True)))

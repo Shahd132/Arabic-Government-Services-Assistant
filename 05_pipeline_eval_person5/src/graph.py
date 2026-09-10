@@ -303,8 +303,7 @@ def run(
     result = compiled.invoke(initial_state)
 
     if use_memory:
-         if not document_path:
-             memory.add_turn(session_id, question, result.get("final_answer", ""))
+         memory.add_turn(session_id, question, result.get("final_answer", ""))
 
     return result
 

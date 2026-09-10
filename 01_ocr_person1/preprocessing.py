@@ -1,15 +1,12 @@
 """
 preprocessing.py
-Image cleanup applied BEFORE OCR — deskew, denoise, contrast normalization.
+Image cleanup BEFORE OCR.
 
-This was the gap flagged in trocr_engine's own docstring ("would improve
-further with: image preprocessing (deskew, denoise, contrast
-normalization)"). Phone photos of a form/card degrade OCR accuracy fast
-without this; clean scans are more forgiving but still benefit from it.
-
-Usage:
-    from preprocessing import preprocess_image
-    processed = preprocess_image("photo.jpg")   # -> np.ndarray, ready for EasyOCR
+FIX for Problem #3:
+- `deskew` is now OPTIONAL and DISABLED by default.
+  Government forms are usually already straight.
+  Deskew was over-correcting and hurting OCR on well-aligned documents.
+- `denoise` and `contrast` remain always on (they always help).
 """
 
 from __future__ import annotations
@@ -24,28 +21,25 @@ def _to_grayscale(img: np.ndarray) -> np.ndarray:
 
 
 def denoise(gray: np.ndarray) -> np.ndarray:
-    """Removes speckle/sensor noise common in phone photos without
-    blurring text edges too aggressively."""
+    """Removes speckle noise without blurring text edges."""
     return cv2.fastNlMeansDenoising(gray, h=10, templateWindowSize=7, searchWindowSize=21)
 
 
 def normalize_contrast(gray: np.ndarray) -> np.ndarray:
-    """CLAHE (adaptive histogram equalization) — evens out uneven lighting
-    across a photographed page/card better than a global contrast stretch."""
+    """CLAHE — evens out uneven lighting."""
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     return clahe.apply(gray)
 
 
 def deskew(gray: np.ndarray) -> np.ndarray:
-    """Detects and corrects page/text rotation using the minimum-area
-    bounding box of foreground (text) pixels. Small skew (a few degrees,
-    typical of handheld photos) is what this targets -- it is not a
-    general-purpose rotation detector for severely misaligned scans."""
+    """
+    Corrects page rotation. Only applies for angles between
+    0.5 and 10 degrees. Disabled by default.
+    """
     thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
     coords = np.column_stack(np.where(thresh > 0))
-    if coords.shape[0] < 20:
-        # Not enough foreground pixels to estimate a reliable angle
-        # (near-blank image) -- skip rather than risk a bogus rotation.
+
+    if coords.shape[0] < 100:
         return gray
 
     angle = cv2.minAreaRect(coords)[-1]
@@ -54,29 +48,28 @@ def deskew(gray: np.ndarray) -> np.ndarray:
     else:
         angle = -angle
 
-    # Don't "correct" tiny angles that are just detector noise, and don't
-    # apply a huge rotation from a bad estimate -- clamp to a sane range.
-    if abs(angle) < 0.3 or abs(angle) > 15:
+    # Only correct if angle is clearly skewed
+    if abs(angle) < 0.5 or abs(angle) > 10:
         return gray
 
     (h, w) = gray.shape[:2]
     center = (w // 2, h // 2)
     M = cv2.getRotationMatrix2D(center, angle, 1.0)
-    rotated = cv2.warpAffine(
+    return cv2.warpAffine(
         gray, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE
     )
-    return rotated
 
 
-def preprocess_image(image_path_or_array) -> np.ndarray:
+def preprocess_image(image_path_or_array, enable_deskew: bool = False) -> np.ndarray:
     """
-    Full pipeline: load -> grayscale -> denoise -> contrast -> deskew.
-    Accepts either a file path (str) or an already-loaded np.ndarray (e.g.
-    a PDF page rendered by PyMuPDF), so it can slot into both ocr_image()
-    and ocr_pdf_as_images() without an extra disk round-trip.
+    Full pipeline: load → grayscale → denoise → contrast → (deskew).
 
-    Returns a single-channel (grayscale) np.ndarray, which EasyOCR accepts
-    directly via reader.readtext(array, ...).
+    Args:
+        image_path_or_array: file path or numpy array.
+        enable_deskew: default False (see note above).
+
+    Returns:
+        Grayscale np.ndarray.
     """
     if isinstance(image_path_or_array, str):
         img = cv2.imread(image_path_or_array)
@@ -88,7 +81,10 @@ def preprocess_image(image_path_or_array) -> np.ndarray:
     gray = _to_grayscale(img)
     gray = denoise(gray)
     gray = normalize_contrast(gray)
-    gray = deskew(gray)
+
+    if enable_deskew:
+        gray = deskew(gray)
+
     return gray
 
 

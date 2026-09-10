@@ -1,0 +1,5 @@
+__pycache__
+.env
+web_app/uploads
+04_router_person4/models
+04_router_person4/data

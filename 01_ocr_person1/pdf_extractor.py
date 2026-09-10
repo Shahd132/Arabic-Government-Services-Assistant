@@ -1,11 +1,14 @@
 """
 pdf_extractor.py
 For DIGITAL PDFs only (already has a text layer).
-Pulls text out directly with PyMuPDF -- no OCR needed, no model, just fast.
 
-Usage:
-    from pdf_extractor import extract_text_from_pdf
-    text = extract_text_from_pdf("some_file.pdf")
+FIX for Problem #5:
+- Previously used `page.get_text()` which flattens everything into one
+  long string and loses line structure.
+- Now uses `page.get_text("blocks")` which returns text blocks
+  (paragraphs, table cells, etc.) separately.
+- Blocks are sorted top-to-bottom, then left-to-right, to approximate
+  reading order for mixed Arabic/English government forms.
 """
 
 import fitz  # PyMuPDF
@@ -13,18 +16,30 @@ import fitz  # PyMuPDF
 
 def extract_text_from_pdf(pdf_path: str) -> str:
     """
-    Extracts all text from a digital PDF, page by page, joined with newlines.
+    Extracts text from a digital PDF, preserving block/line structure.
     """
     doc = fitz.open(pdf_path)
-    pages_text = []
+    all_pages = []
 
-    for page_num, page in enumerate(doc):
-        text = page.get_text()
-        pages_text.append(text)
+    for page in doc:
+        # blocks: list of (x0, y0, x1, y1, text, block_no, block_type)
+        # block_type: 0 = text, 1 = image
+        blocks = page.get_text("blocks")
+
+        # Sort by vertical position, then horizontal (approximate reading order)
+        blocks.sort(key=lambda b: (round(b[1]), b[0]))
+
+        page_parts = []
+        for b in blocks:
+            if b[6] == 0:  # text block
+                block_text = b[4].strip()
+                if block_text:
+                    page_parts.append(block_text)
+
+        all_pages.append("\n".join(page_parts))
 
     doc.close()
-    full_text = "\n".join(pages_text)
-    return full_text
+    return "\n\n".join(all_pages)
 
 
 if __name__ == "__main__":
@@ -35,5 +50,5 @@ if __name__ == "__main__":
 
     path = sys.argv[1]
     extracted = extract_text_from_pdf(path)
-    print(extracted[:1000])  # just print first 1000 chars as a sanity check
+    print(extracted[:1500])
     print(f"\n\n[Total characters extracted: {len(extracted)}]")
