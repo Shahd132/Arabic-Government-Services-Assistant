@@ -28,5 +28,5 @@ MAX_TOKENS_GENERATION = 800
 MAX_TOKENS_VERIFICATION = 300
 MAX_TOKENS_REWRITE = 100
 
-TOP_K = int(os.environ.get("RETRIEVAL_TOP_K", "5"))
+TOP_K = int(os.environ.get("RETRIEVAL_TOP_K", "2"))
 RAGAS_REPORT_PATH = PIPELINE_DIR / "results" / "ragas_report.json"
