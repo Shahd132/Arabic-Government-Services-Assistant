@@ -1,0 +1,39 @@
+/* Custom styling for the chat interface */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Tahoma', 'Segoe UI', sans-serif;
+}
+
+#chat-window {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+#messages {
+    background: #ffffff;
+}
+
+#messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+#messages::-webkit-scrollbar-thumb {
+    background: #c1c7cd;
+    border-radius: 4px;
+}
+
+.badge {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+}
+
+.bg-light.border {
+    border-color: #dee2e6 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .card-body {
+        height: 350px !important;
+    }
+}

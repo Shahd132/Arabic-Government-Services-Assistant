@@ -1,0 +1,11 @@
+{
+  "num_chunks": 1079,
+  "departments": [
+    "civil_affairs",
+    "tax",
+    "traffic"
+  ],
+  "embedder_model": "intfloat/multilingual-e5-small",
+  "dense_index": "FAISS IndexFlatIP",
+  "sparse_index": "BM25"
+}

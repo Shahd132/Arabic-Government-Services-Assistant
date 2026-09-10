@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المساعد الذكي – Smart Citizen Assistant</title>
+
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ============ RESET & BASE ============ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0f2557;          /* Deep Egyptian Navy */
+            --primary-light: #1e3a8a;
+            --accent-gold: #d4a017;       /* Egyptian Gold */
+            --accent-gold-light: #f5c518;
+            --accent-red: #c62828;        /* Egyptian Red */
+            --bg-dark: #0a1628;
+            --bg-light: #f5f7fa;
+            --white: #ffffff;
+            --gray-100: #f8f9fb;
+            --gray-200: #e8ecf1;
+            --gray-400: #94a3b8;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --shadow-sm: 0 2px 8px rgba(15, 37, 87, 0.08);
+            --shadow-md: 0 8px 24px rgba(15, 37, 87, 0.12);
+            --shadow-lg: 0 16px 48px rgba(15, 37, 87, 0.18);
+            --shadow-glow: 0 0 40px rgba(212, 160, 23, 0.25);
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+        }
+
+        body {
+            font-family: 'Cairo', 'Tahoma', sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #0f2557 50%, #1a3a7a 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Decorative background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(212, 160, 23, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(198, 40, 40, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ============ LAYOUT ============ */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ============ SIDEBAR ============ */
+        .sidebar {
+            width: 300px;
+            background: rgba(10, 22, 40, 0.85);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(212, 160, 23, 0.15);
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            color: var(--white);
+            position: relative;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(212, 160, 23, 0.2);
+        }
+
+        .logo-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--primary);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .logo-text h2 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+            background: linear-gradient(135deg, #fff, var(--accent-gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-text p {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.55);
+            font-weight: 400;
+        }
+
+        .sidebar-section h3 {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-gold);
+            margin-bottom: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-section h3 i {
+            font-size: 0.9rem;
+        }
+
+        /* Department cards */
+        .dept-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .dept-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            transition: all 0.25s ease;
+            cursor: default;
+        }
+
+        .dept-item:hover {
+            background: rgba(212, 160, 23, 0.1);
+            border-color: rgba(212, 160, 23, 0.3);
+            transform: translateX(-3px);
+        }
+
+        .dept-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .dept-icon.civil { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .dept-icon.tax   { background: linear-gradient(135deg, #10b981, #059669); }
+        .dept-icon.traffic { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .dept-item span {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Features list */
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .feature-item i {
+            color: var(--accent-gold);
+            font-size: 0.85rem;
+            width: 18px;
+        }
+
+        /* Sidebar footer */
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid rgba(212, 160, 23, 0.15);
+            text-align: center;
+        }
+
+        .sidebar-footer p {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.4);
+            line-height: 1.6;
+        }
+
+        .sidebar-footer .version {
+            display: inline-block;
+            padding: 3px 10px;
+            background: rgba(212, 160, 23, 0.15);
+            border-radius: 20px;
+            color: var(--accent-gold);
+            font-weight: 700;
+            font-size: 0.68rem;
+            margin-top: 8px;
+        }
+
+        /* ============ MAIN AREA ============ */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            gap: 18px;
+            max-width: calc(100% - 300px);
+        }
+
+        /* Header */
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .header-title h1 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 i {
+            color: var(--accent-gold);
+        }
+
+        .header-title p {
+            font-size: 0.8rem;
+            color: var(--gray-400);
+            margin-top: 3px;
+            font-weight: 500;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 30px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #059669;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .btn-new-chat {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(15, 37, 87, 0.25);
+        }
+
+        .btn-new-chat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 37, 87, 0.35);
+        }
+
+        /* ============ CHAT WINDOW ============ */
+        .chat-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 28px;
+            overflow-y: auto;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(212, 160, 23, 0.04) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(15, 37, 87, 0.04) 0%, transparent 40%),
+                #fafbfd;
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 8px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(15, 37, 87, 0.15);
+            border-radius: 4px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: rgba(15, 37, 87, 0.3);
+        }
+
+        /* Welcome screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 44px;
+            color: var(--accent-gold);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-glow);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .welcome-screen h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .welcome-screen > p {
+            font-size: 0.95rem;
+            color: var(--gray-400);
+            margin-bottom: 32px;
+            max-width: 500px;
+            line-height: 1.7;
+        }
+
+        .suggestions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            width: 100%;
+            max-width: 720px;
+        }
+
+        .suggestion-card {
+            padding: 16px 18px;
+            background: white;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 14px;
+            text-align: right;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .suggestion-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .suggestion-card i {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, rgba(212, 160, 23, 0.15), rgba(212, 160, 23, 0.05));
+            color: var(--accent-gold);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .suggestion-card span {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            line-height: 1.4;
+        }
+
+        /* Message bubbles */
+        .message-row {
+            display: flex;
+            margin-bottom: 20px;
+            animation: slideIn 0.35s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-row.user { justify-content: flex-start; }
+        .message-row.assistant { justify-content: flex-end; }
+
+        .message-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+
+        .message-row.user .message-avatar {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--accent-gold);
+        }
+
+        .message-row.assistant .message-avatar {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+            color: var(--primary);
+            margin-left: 0;
+            margin-right: 12px;
+        }
+
+        .message-content {
+            max-width: 75%;
+        }
+
+        .message-bubble {
+            padding: 14px 18px;
+            border-radius: 18px;
+            font-size: 0.9rem;
+            line-height: 1.85;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message-row.user .message-bubble {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 4px 12px rgba(15, 37, 87, 0.2);
+        }
+
+        .message-row.assistant .message-bubble {
+            background: white;
+            color: var(--gray-800);
+            border: 1.5px solid var(--gray-200);
+            border-bottom-right-radius: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message-image {
+            max-width: 260px;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 12px;
+            margin-top: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .message-file-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        /* Meta badges */
+        .message-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--gray-200);
+        }
+
+        .meta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .meta-badge.department {
+            background: rgba(15, 37, 87, 0.08);
+            color: var(--primary);
+            border: 1px solid rgba(15, 37, 87, 0.15);
+        }
+
+        .meta-badge.confidence {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .meta-badge.verified {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .meta-badge.unverified {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .meta-badge.sources {
+            background: rgba(212, 160, 23, 0.1);
+            color: #b8860b;
+            border: 1px solid rgba(212, 160, 23, 0.2);
+        }
+
+        .meta-badge.document {
+            background: rgba(139, 92, 246, 0.1);
+            color: #7c3aed;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        /* ============ INPUT AREA ============ */
+        .input-area {
+            padding: 20px 24px;
+            background: white;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .file-preview-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(212, 160, 23, 0.08);
+            border: 1px solid rgba(212, 160, 23, 0.2);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-size: 0.82rem;
+            color: var(--gray-800);
+            font-weight: 600;
+        }
+
+        .file-preview-row img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .file-preview-row .file-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-preview-row .remove-file {
+            background: none;
+            border: none;
+            color: var(--accent-red);
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 4px;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--gray-100);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            padding: 6px 6px 6px 18px;
+            transition: all 0.25s ease;
+        }
+
+        .chat-input-wrapper:focus-within {
+            border-color: var(--accent-gold);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.1);
+        }
+
+        .chat-input-wrapper input[type="text"] {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.92rem;
+            color: var(--gray-800);
+            padding: 12px 0;
+        }
+
+        .chat-input-wrapper input[type="text"]::placeholder {
+            color: var(--gray-400);
+        }
+
+        .input-action-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: var(--gray-600);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .input-action-btn:hover {
+            background: rgba(15, 37, 87, 0.08);
+            color: var(--primary);
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--accent-gold);
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(15, 37, 87, 0.3);
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(15, 37, 87, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Hidden file input */
+        #file-input { display: none; }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 18px;
+            background: white;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 18px;
+            width: fit-content;
+            margin-bottom: 20px;
+            margin-right: 54px;
+        }
+
+        .typing-indicator.active { display: flex; }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 968px) {
+            .app-container { flex-direction: column; }
+            .sidebar { width: 100%; padding: 20px; }
+            .main-area { max-width: 100%; padding: 16px; }
+            .suggestions { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 576px) {
+            .main-header { flex-direction: column; gap: 12px; align-items: stretch; }
+            .header-actions { justify-content: space-between; }
+            .message-content { max-width: 85%; }
+            .chat-messages { padding: 16px; }
+            .input-area { padding: 12px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <div class="logo-text">
+                    <h2>المساعد الذكي</h2>
+                    <p>Smart Citizen Assistant</p>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-building-columns"></i> الإدارات المدعومة</h3>
+                <div class="dept-list">
+                    <div class="dept-item">
+                        <div class="dept-icon civil"><i class="fas fa-id-card"></i></div>
+                        <span>الأحوال المدنية</span>
+                    </div>
+                    <div class="dept-item">
+                        <div class="dept-icon tax"><i class="fas fa-coins"></i></div>
+                        <span>مصلحة الضرائب</span>
+                    </div>
+                    <div class="dept-item">
+                        <div class="dept-icon traffic"><i class="fas fa-car"></i></div>
+                        <span>إدارة المرور</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3><i class="fas fa-star"></i> المميزات</h3>
+                <div class="feature-list">
+                    <div class="feature-item"><i class="fas fa-check-circle"></i> بحث هجين متقدم</div>
+                    <div class="feature-item"><i class="fas fa-check-circle"></i> تحليل المستندات (OCR)</div>
+                    <div class="feature-item"><i class="fas fa-check-circle"></i> التحقق من الإجابات</div>
+                    <div class="feature-item"><i class="fas fa-check-circle"></i> محادثات متعددة الأدوار</div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <p>نظام معلومات حكومي ذكي<br>مدعوم بالذكاء الاصطناعي</p>
+                <span class="version">v1.0 · NTI 2026</span>
+            </div>
+        </aside>
+
+        <!-- ============ MAIN AREA ============ -->
+        <main class="main-area">
+
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h1><i class="fas fa-comments"></i> محادثة جديدة</h1>
+                    <p>اطرح سؤالك أو ارفع مستنداً للتحليل</p>
+                </div>
+                <div class="header-actions">
+                    <div class="status-badge">
+                        <span class="status-dot"></span>
+                        النظام متصل
+                    </div>
+                    <button class="btn-new-chat" id="reset-btn">
+                        <i class="fas fa-rotate-right"></i>
+                        محادثة جديدة
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat -->
+            <div class="chat-container">
+                <div class="chat-messages" id="messages">
+
+                    <!-- Welcome Screen -->
+                    <div class="welcome-screen" id="welcome-msg">
+                        <div class="welcome-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h2>أهلاً بك في المساعد الذكي</h2>
+                        <p>مساعدك الحكومي الموثوق للإجابة عن استفساراتك في الأحوال المدنية، الضرائب، والمرور — بسرعة ودقة.</p>
+
+                        <div class="suggestions">
+                            <div class="suggestion-card" onclick="fillQuestion('إزاي أطلع بطاقة رقم قومي لأول مرة؟')">
+                                <i class="fas fa-id-card"></i>
+                                <span>إزاي أطلع بطاقة رقم قومي؟</span>
+                            </div>
+                            <div class="suggestion-card" onclick="fillQuestion('إزاي أحسب ضريبة الدخل على مرتبي؟')">
+                                <i class="fas fa-coins"></i>
+                                <span>إزاي أحسب ضريبة الدخل؟</span>
+                            </div>
+                            <div class="suggestion-card" onclick="fillQuestion('إزاي أجدد رخصة القيادة؟')">
+                                <i class="fas fa-car"></i>
+                                <span>إزاي أجدد رخصة القيادة؟</span>
+                            </div>
+                            <div class="suggestion-card" onclick="fillQuestion('إزاي أستعلم عن مخالفات المرور؟')">
+                                <i class="fas fa-triangle-exclamation"></i>
+                                <span>الاستعلام عن المخالفات</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Input -->
+                <div class="input-area">
+
+                    <!-- File preview -->
+                    <div id="file-preview-container" style="display: none;">
+                        <div class="file-preview-row">
+                            <img id="file-thumbnail" src="" alt="" style="display: none;">
+                            <div class="file-info">
+                                <i class="fas fa-file-pdf" id="file-icon"></i>
+                                <span id="file-name-display">file.pdf</span>
+                            </div>
+                            <button class="remove-file" id="clear-file-btn">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-wrapper">
+                        <button class="input-action-btn" id="upload-btn" title="رفع مستند">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.gif,.bmp,.tiff,.webp">
+
+                        <input type="text" id="user-input" placeholder="اكتب سؤالك هنا..." autocomplete="off" dir="rtl">
+
+                        <button class="send-btn" id="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ===== Elements =====
+        const userInput       = document.getElementById('user-input');
+        const sendBtn         = document.getElementById('send-btn');
+        const messagesEl      = document.getElementById('messages');
+        const welcomeMsg      = document.getElementById('welcome-msg');
+        const resetBtn        = document.getElementById('reset-btn');
+        const uploadBtn       = document.getElementById('upload-btn');
+        const fileInput       = document.getElementById('file-input');
+        const filePreviewCtr  = document.getElementById('file-preview-container');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const fileThumbnail   = document.getElementById('file-thumbnail');
+        const fileIcon        = document.getElementById('file-icon');
+        const clearFileBtn    = document.getElementById('clear-file-btn');
+
+        let selectedFile = null;
+
+        // ===== Suggestion click =====
+        function fillQuestion(q) {
+            userInput.value = q;
+            userInput.focus();
+        }
+
+        // ===== Upload =====
+        uploadBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', e => {
+            if (e.target.files.length) {
+                selectedFile = e.target.files[0];
+                fileNameDisplay.textContent = selectedFile.name;
+
+                if (selectedFile.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = ev => {
+                        fileThumbnail.src = ev.target.result;
+                        fileThumbnail.style.display = 'block';
+                        fileIcon.style.display = 'none';
+                    };
+                    reader.readAsDataURL(selectedFile);
+                } else {
+                    fileThumbnail.style.display = 'none';
+                    fileIcon.style.display = 'inline';
+                    fileIcon.className = 'fas fa-file-pdf';
+                }
+
+                filePreviewCtr.style.display = 'block';
+            }
+        });
+
+        clearFileBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            filePreviewCtr.style.display = 'none';
+        });
+
+        // ===== Add message =====
+        function addMessage(role, content, meta = {}) {
+            if (welcomeMsg) welcomeMsg.remove();
+
+            const row = document.createElement('div');
+            row.className = `message-row ${role}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.innerHTML = role === 'user'
+                ? '<i class="fas fa-user"></i>'
+                : '<i class="fas fa-robot"></i>';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = content;
+
+            // File tag for user
+            if (role === 'user' && meta.fileName) {
+                const tag = document.createElement('div');
+                tag.className = 'message-file-tag';
+                tag.innerHTML = `<i class="fas fa-paperclip"></i> ${meta.fileName}`;
+                bubble.appendChild(tag);
+            }
+
+            // Image preview for user
+            if (role === 'user' && meta.imageUrl) {
+                const img = document.createElement('img');
+                img.src = meta.imageUrl;
+                img.className = 'message-image';
+                bubble.appendChild(img);
+            }
+
+            contentDiv.appendChild(bubble);
+
+            // Meta badges for assistant
+            if (role === 'assistant') {
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'message-meta';
+
+                if (meta.department) {
+                    metaDiv.innerHTML += `<span class="meta-badge department"><i class="fas fa-sitemap"></i> ${meta.department}</span>`;
+                }
+                if (meta.confidence) {
+                    metaDiv.innerHTML += `<span class="meta-badge confidence"><i class="fas fa-chart-line"></i> ${meta.confidence}</span>`;
+                }
+                if (meta.sources && meta.sources.length) {
+                    metaDiv.innerHTML += `<span class="meta-badge sources"><i class="fas fa-book"></i> ${meta.sources.length} مصادر</span>`;
+                }
+                if (meta.verified !== undefined) {
+                    metaDiv.innerHTML += meta.verified
+                        ? `<span class="meta-badge verified"><i class="fas fa-shield-halved"></i> مدعوم</span>`
+                        : `<span class="meta-badge unverified"><i class="fas fa-triangle-exclamation"></i> غير مدعوم</span>`;
+                }
+                if (meta.documentProcessed) {
+                    metaDiv.innerHTML += `<span class="meta-badge document"><i class="fas fa-file-magnifying-glass"></i> تم تحليل المستند</span>`;
+                }
+
+                if (metaDiv.children.length) contentDiv.appendChild(metaDiv);
+            }
+
+            if (role === 'user') {
+                row.appendChild(contentDiv);
+                row.appendChild(avatar);
+            } else {
+                row.appendChild(avatar);
+                row.appendChild(contentDiv);
+            }
+
+            messagesEl.appendChild(row);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        // ===== Typing =====
+        function showTyping(show) {
+            const existing = document.getElementById('typing-indicator');
+            if (show) {
+                if (existing) return;
+                const el = document.createElement('div');
+                el.className = 'typing-indicator active';
+                el.id = 'typing-indicator';
+                el.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+                messagesEl.appendChild(el);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            } else if (existing) {
+                existing.remove();
+            }
+        }
+
+        // ===== Send =====
+        async function sendMessage() {
+            const question = userInput.value.trim();
+            if (!question) return;
+
+            const fileToSend = selectedFile;
+            const fileName = fileToSend ? fileToSend.name : null;
+
+            let localImageUrl = null;
+            if (fileToSend && fileToSend.type.startsWith('image/')) {
+                localImageUrl = URL.createObjectURL(fileToSend);
+            }
+
+            addMessage('user', question, { fileName, imageUrl: localImageUrl });
+
+            userInput.value = '';
+            sendBtn.disabled = true;
+            userInput.disabled = true;
+            showTyping(true);
+
+            const formData = new FormData();
+            formData.append('question', question);
+            if (fileToSend) formData.append('document', fileToSend);
+
+            try {
+                const res = await fetch('/ask', { method: 'POST', body: formData });
+                const data = await res.json();
+
+                showTyping(false);
+
+                if (res.ok) {
+                    addMessage('assistant', data.answer, {
+                        department: data.department,
+                        confidence: data.confidence,
+                        sources: data.sources,
+                        verified: data.verified,
+                        documentProcessed: data.document_processed
+                    });
+                } else {
+                    addMessage('assistant', '⚠️ عذراً، حدث خطأ: ' + (data.error || 'غير معروف'));
+                }
+            } catch (err) {
+                showTyping(false);
+                addMessage('assistant', '⚠️ تعذر الاتصال بالخادم.');
+            } finally {
+                sendBtn.disabled = false;
+                userInput.disabled = false;
+                userInput.focus();
+                selectedFile = null;
+                fileInput.value = '';
+                filePreviewCtr.style.display = 'none';
+                if (localImageUrl) URL.revokeObjectURL(localImageUrl);
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // ===== Reset =====
+        resetBtn.addEventListener('click', async () => {
+            try { await fetch('/reset', { method: 'POST' }); } catch {}
+            messagesEl.innerHTML = `
+                <div class="welcome-screen" id="welcome-msg">
+                    <div class="welcome-icon"><i class="fas fa-robot"></i></div>
+                    <h2>أهلاً بك في المساعد الذكي</h2>
+                    <p>مساعدك الحكومي الموثوق للإجابة عن استفساراتك في الأحوال المدنية، الضرائب، والمرور — بسرعة ودقة.</p>
+                    <div class="suggestions">
+                        <div class="suggestion-card" onclick="fillQuestion('إزاي أطلع بطاقة رقم قومي لأول مرة؟')">
+                            <i class="fas fa-id-card"></i><span>إزاي أطلع بطاقة رقم قومي؟</span>
+                        </div>
+                        <div class="suggestion-card" onclick="fillQuestion('إزاي أحسب ضريبة الدخل على مرتبي؟')">
+                            <i class="fas fa-coins"></i><span>إزاي أحسب ضريبة الدخل؟</span>
+                        </div>
+                        <div class="suggestion-card" onclick="fillQuestion('إزاي أجدد رخصة القيادة؟')">
+                            <i class="fas fa-car"></i><span>إزاي أجدد رخصة القيادة؟</span>
+                        </div>
+                        <div class="suggestion-card" onclick="fillQuestion('إزاي أستعلم عن مخالفات المرور؟')">
+                            <i class="fas fa-triangle-exclamation"></i><span>الاستعلام عن المخالفات</span>
+                        </div>
+                    </div>
+                </div>`;
+            selectedFile = null;
+            fileInput.value = '';
+            filePreviewCtr.style.display = 'none';
+        });
+
+        window.onload = () => userInput.focus();
+    </script>
+</body>
+</html>
